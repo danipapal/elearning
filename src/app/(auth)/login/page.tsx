@@ -9,7 +9,7 @@ import { getCurrentUser, safeNextPath } from "@/lib/auth";
 export const metadata: Metadata = { title: "Iniciar sesión" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  const { next, error } = await searchParams;
+  const { next, error, mensaje } = await searchParams;
   const nextPath = safeNextPath(next);
 
   if (await getCurrentUser()) redirect(nextPath);
@@ -21,6 +21,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <CardDescription>Entrá para seguir aprendiendo.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
+        {mensaje === "email-confirmado" && (
+          <p
+            role="status"
+            className="rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400"
+          >
+            ¡Tu email quedó confirmado! Ya podés iniciar sesión.
+          </p>
+        )}
         <LoginForm
           next={nextPath}
           initialError={

@@ -33,7 +33,7 @@ No hace falta saber programar: son pasos en las páginas de Supabase y Render.
 2. **Authentication > URL Configuration**:
    - **Site URL:** por ahora `http://localhost:3000` (en la parte 2 la cambiamos por la de Render).
    - **Redirect URLs:** agregá `http://localhost:3000/**` (en la parte 2 agregamos la de Render).
-3. **Authentication > Emails > Templates** (plantillas). Esto hace que los enlaces de los emails funcionen aunque el alumno los abra en otro navegador o en el celular:
+3. **(Opcional, solo con SMTP propio)** **Authentication > Emails > Templates**. Supabase no deja editar las plantillas mientras se use su servidor de email incluido; lo hacemos en la fase 6 al configurar Resend. Sin este cambio todo funciona igual: si un alumno abre el enlace de confirmación en otro navegador, la cuenta queda confirmada y solo tiene que iniciar sesión. Con SMTP propio, cambiar los enlaces así:
    - **Confirm signup:** en el HTML, reemplazá `{{ .ConfirmationURL }}` por:
      ```
      {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/mi-aprendizaje
