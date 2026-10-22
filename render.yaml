@@ -1,0 +1,25 @@
+# Blueprint de Render: crea el Web Service automáticamente.
+# Render > New > Blueprint > elegir este repositorio.
+services:
+  - type: web
+    name: elearning
+    runtime: node
+    # "free" para probar (se duerme tras 15 min sin visitas). Pasar a "starter" al lanzar.
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      # Los valores se cargan a mano en el panel de Render (no van al repo).
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
