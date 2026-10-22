@@ -16,6 +16,8 @@ import {
 } from "@/lib/validation/auth";
 
 function authErrorMessage(error: AuthError) {
+  // Queda en los logs del servidor (Render > Logs) para poder diagnosticar.
+  console.error("[auth]", error.status, error.code, error.message);
   switch (error.code) {
     case "invalid_credentials":
       return "Email o contraseña incorrectos.";
