@@ -120,7 +120,10 @@ create policy "profiles: editar el propio"
 
 -- ...pero solo las columnas nombre y foto. El rol y el estado NO se pueden
 -- cambiar desde el navegador: solo desde el servidor (clave secreta) o SQL.
+-- Permisos explícitos (no dependemos de "Automatically expose new tables").
 revoke all on public.profiles from anon, authenticated;
+grant usage on schema public to anon, authenticated, service_role;
+grant all on public.profiles to service_role;
 grant select on public.profiles to authenticated;
 grant update (full_name, avatar_url) on public.profiles to authenticated;
 
