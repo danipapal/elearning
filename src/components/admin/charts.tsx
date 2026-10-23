@@ -12,7 +12,7 @@ export function WeekBars({ title, data }: { title: string; data: WeekCount[] }) 
       <div className="flex h-36 items-end gap-1.5 border-b" aria-hidden>
         {data.map((item) => (
           <div key={item.week} className="group relative flex h-full flex-1 flex-col justify-end">
-            <span className="text-muted-foreground pointer-events-none mb-1 text-center text-xs tabular-nums opacity-0 group-hover:opacity-100">
+            <span className="text-muted-foreground pointer-events-none mb-1 text-center text-xs opacity-0 group-hover:opacity-100">
               {item.count}
             </span>
             <div
@@ -27,8 +27,8 @@ export function WeekBars({ title, data }: { title: string; data: WeekCount[] }) 
         <span>{data[0] && weekFormat.format(new Date(data[0].week))}</span>
         <span>Esta semana</span>
       </div>
-      <table className="sr-only">
-        <caption>{title}</caption>
+      {/* Sin <caption>: en Firefox el caption se dibuja aunque la tabla esté oculta. */}
+      <table className="sr-only" aria-label={title}>
         <thead>
           <tr>
             <th>Semana</th>
@@ -70,7 +70,7 @@ export function BarRow({
           {label}
           {sublabel && <span className="text-muted-foreground"> · {sublabel}</span>}
         </span>
-        <span className="text-muted-foreground shrink-0 tabular-nums">{display ?? value}</span>
+        <span className="text-muted-foreground shrink-0">{display ?? value}</span>
       </div>
       <div className="bg-muted h-2 overflow-hidden rounded-full" aria-hidden>
         <div className="bg-primary h-full rounded-full" style={{ width: `${width}%` }} />

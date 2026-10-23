@@ -18,7 +18,7 @@ function StatTile({ label, value, note }: { label: string; value: number; note?:
     <Card className="gap-1 py-4">
       <CardContent className="grid gap-1 px-4">
         <p className="text-muted-foreground text-sm">{label}</p>
-        <p className="text-3xl font-semibold tabular-nums">{value.toLocaleString("es-AR")}</p>
+        <p className="text-3xl font-semibold">{value.toLocaleString("es-AR")}</p>
         {note && <p className="text-muted-foreground text-xs">{note}</p>}
       </CardContent>
     </Card>
