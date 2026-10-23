@@ -25,7 +25,7 @@ export default async function AdminPage() {
   const user = await requireAdmin();
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-bold">Administración</h1>
         <Badge variant="secondary">{roleLabels[user.role]}</Badge>

@@ -16,7 +16,7 @@ export default async function SyllabusPage({ params }: PageProps<"/admin/cursos/
     .order("position", { referencedTable: "lessons" });
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <p className="text-muted-foreground text-sm">
         Arrastrá los módulos y las lecciones desde el ícono ⠿ para cambiar el orden (con el teclado:
         Tab hasta el ícono, Espacio, flechas y Espacio otra vez).

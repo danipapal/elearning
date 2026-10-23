@@ -10,7 +10,7 @@ import type { FormState } from "@/lib/validation/form";
 export function NewCourseForm() {
   const [state, action] = useActionState<FormState, FormData>(createCourse, {});
   return (
-    <form action={action} className="grid gap-4">
+    <form action={action} className="grid grid-cols-1 gap-4">
       <FormStatus state={state} />
       <FormField name="title" label="Título del curso" state={state}>
         <Input

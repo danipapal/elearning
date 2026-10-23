@@ -58,8 +58,8 @@ export function LessonForm({
   const usesFiles = type === "pdf" || type === "mixed";
 
   return (
-    <div className="grid gap-8">
-      <form onSubmit={onSubmit} className="grid gap-6" noValidate>
+    <div className="grid grid-cols-1 gap-8">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-6" noValidate>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField name="title" label="Título de la lección" state={state} className="sm:col-span-2">
             <Input id="title" name="title" defaultValue={lesson.title} required maxLength={160} />
@@ -89,7 +89,7 @@ export function LessonForm({
         </div>
 
         {usesVideo && (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <FormField
               name="videoUrl"
               label="Enlace del video"
@@ -167,7 +167,7 @@ export function LessonForm({
       </form>
 
       {(usesFiles || attachments.length > 0) && (
-        <section className="grid gap-3">
+        <section className="grid grid-cols-1 gap-3">
           <h2 className="text-lg font-semibold">Archivos descargables</h2>
           <AttachmentsManager lessonId={lesson.id} attachments={attachments} />
         </section>

@@ -15,7 +15,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [state, action] = useActionState<FormState, FormData>(createCategory, {});
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <form action={action} className="flex flex-wrap items-end gap-3">
         <FormField name="name" label="Nueva categoría" state={state} className="min-w-56 flex-1">
           <Input id="name" name="name" placeholder="Ej: Diseño" required maxLength={80} />

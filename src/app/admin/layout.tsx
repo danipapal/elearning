@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   await requireAdmin();
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 md:grid-cols-[12rem_1fr]">
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 px-4 py-8 md:grid-cols-[12rem_minmax(0,1fr)]">
       <aside>
         <AdminNav />
       </aside>

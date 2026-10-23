@@ -19,7 +19,7 @@ export default async function AdminCoursesPage() {
     .order("updated_at", { ascending: false });
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Cursos</h1>
         <Button asChild>

@@ -16,7 +16,7 @@ type Course = Database["public"]["Tables"]["courses"]["Row"];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="grid gap-4">
+    <section className="grid grid-cols-1 gap-4">
       <h2 className="text-lg font-semibold">{title}</h2>
       {children}
     </section>
@@ -35,7 +35,7 @@ export function CourseForm({
   const { state, onSubmit, pending } = useFormAction(updateCourse.bind(null, course.id));
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-8" noValidate>
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-8" noValidate>
       <Section title="Datos principales">
         <FormField name="title" label="Título" state={state}>
           <Input id="title" name="title" defaultValue={course.title} required maxLength={160} />

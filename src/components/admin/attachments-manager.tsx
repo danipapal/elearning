@@ -62,7 +62,7 @@ export function AttachmentsManager({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-3">
       {attachments.length > 0 ? (
         <ul className="divide-y rounded-md border">
           {attachments.map((attachment) => (

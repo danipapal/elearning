@@ -45,7 +45,7 @@ export function CoverUpload({ courseId, coverUrl }: { courseId: string; coverUrl
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-3">
       <div className="bg-muted relative flex aspect-video w-full max-w-md items-center justify-center overflow-hidden rounded-lg border">
         {coverUrl ? (
           <Image src={coverUrl} alt="Portada del curso" fill sizes="448px" className="object-cover" />

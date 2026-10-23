@@ -16,6 +16,8 @@ const supabaseUrl = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://exa
 
 const nextConfig: NextConfig = {
   images: {
+    // Solo para desarrollo con Supabase local (127.0.0.1); en producción es false.
+    dangerouslyAllowLocalIP: ["127.0.0.1", "localhost"].includes(supabaseUrl.hostname),
     remotePatterns: [
       {
         protocol: supabaseUrl.protocol === "http:" ? "http" : "https",

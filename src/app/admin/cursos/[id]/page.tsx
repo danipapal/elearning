@@ -25,8 +25,8 @@ export default async function EditCoursePage({ params }: PageProps<"/admin/curso
   if (!course) notFound();
 
   return (
-    <div className="grid gap-8">
-      <section className="grid gap-3">
+    <div className="grid grid-cols-1 gap-8">
+      <section className="grid grid-cols-1 gap-3">
         <h2 className="text-lg font-semibold">Portada</h2>
         <CoverUpload courseId={course.id} coverUrl={coverUrl(course.cover_path)} />
       </section>

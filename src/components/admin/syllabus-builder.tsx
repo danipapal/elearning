@@ -348,11 +348,11 @@ export function SyllabusBuilder({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       {modules.length > 0 ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onModuleDragEnd}>
           <SortableContext items={modules.map((module) => module.id)} strategy={verticalListSortingStrategy}>
-            <ol className="grid gap-4">
+            <ol className="grid grid-cols-1 gap-4">
               {modules.map((module, index) => (
                 <ModuleCard key={module.id} module={module} index={index} courseId={courseId} />
               ))}

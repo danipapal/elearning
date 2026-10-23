@@ -27,7 +27,7 @@ export default async function EditLessonPage({
   if (!lesson) notFound();
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <Link
         href={`/admin/cursos/${id}/temario`}
         className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-sm"

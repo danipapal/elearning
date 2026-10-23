@@ -15,7 +15,7 @@ export function FaqEditor({ name, defaultValue }: { name: string; defaultValue: 
     setItems((current) => current.map((item, i) => (i === index ? { ...item, ...patch } : item)));
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-3">
       {items.map((item, index) => (
         <div key={index} className="grid gap-2 rounded-md border p-3">
           <div className="flex gap-2">

@@ -20,8 +20,8 @@ export default async function CourseLayout({ children, params }: LayoutProps<"/a
   if (!course) notFound();
 
   return (
-    <div className="grid gap-6">
-      <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-3">
         <Link
           href="/admin/cursos"
           className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-sm"
