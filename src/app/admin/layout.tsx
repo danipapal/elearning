@@ -1,4 +1,5 @@
 import { AdminNav } from "@/components/admin/admin-nav";
+import { ConfirmProvider } from "@/components/admin/confirm-dialog";
 import { requireAdmin } from "@/lib/auth";
 
 // Toda la sección /admin verifica el rol en el servidor, en cada request.
@@ -9,7 +10,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <aside>
         <AdminNav />
       </aside>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0">
+        <ConfirmProvider>{children}</ConfirmProvider>
+      </div>
     </div>
   );
 }

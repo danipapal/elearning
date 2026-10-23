@@ -12,6 +12,7 @@ import {
   unenrollUser,
   type ActionResult,
 } from "@/app/admin/usuarios/actions";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import { ROLE_LABELS } from "@/lib/users";
@@ -20,8 +21,9 @@ import type { UserRole, UserStatus } from "@/types/database";
 function useResultAction() {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<ActionResult | null>(null);
-  const run = (action: () => Promise<ActionResult>, confirmMessage?: string) => {
-    if (confirmMessage && !window.confirm(confirmMessage)) return;
+  const confirm = useConfirm();
+  const run = async (action: () => Promise<ActionResult>, confirmMessage?: string) => {
+    if (confirmMessage && !(await confirm(confirmMessage))) return;
     setResult(null);
     startTransition(async () => {
       setResult(await action());

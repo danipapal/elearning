@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 import {
@@ -221,6 +222,7 @@ function ModuleCard({
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [pending, startTransition] = useTransition();
+  const confirm = useConfirm();
   const sensors = useDndSensors();
 
   function onLessonDragEnd({ active, over }: DragEndEvent) {
@@ -265,12 +267,12 @@ function ModuleCard({
           size="icon"
           aria-label={`Eliminar módulo ${module.title}`}
           disabled={pending}
-          onClick={() => {
+          onClick={async () => {
             const message =
               lessons.length > 0
                 ? `¿Eliminar el módulo "${module.title}" y sus ${lessons.length} lecciones? No se puede deshacer.`
                 : `¿Eliminar el módulo "${module.title}"?`;
-            if (window.confirm(message)) startTransition(() => deleteModule(module.id));
+            if (await confirm(message)) startTransition(() => deleteModule(module.id));
           }}
         >
           <Trash2 />

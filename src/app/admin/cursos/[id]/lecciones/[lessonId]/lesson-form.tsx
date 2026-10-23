@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 
@@ -54,6 +55,7 @@ export function LessonForm({
   const [type, setType] = useState<LessonType>(lesson.type === "quiz" ? "text" : lesson.type);
   const [videoUrl, setVideoUrl] = useState(lesson.video_url ?? "");
   const [deleting, startDelete] = useTransition();
+  const confirm = useConfirm();
   const usesVideo = type === "video" || type === "mixed";
   const usesFiles = type === "pdf" || type === "mixed";
 
@@ -154,8 +156,8 @@ export function LessonForm({
               variant="ghost"
               className="text-destructive"
               disabled={deleting}
-              onClick={() => {
-                if (window.confirm("¿Eliminar esta lección y sus archivos? No se puede deshacer.")) {
+              onClick={async () => {
+                if (await confirm("¿Eliminar esta lección y sus archivos? No se puede deshacer.")) {
                   startDelete(() => deleteLesson(lesson.id));
                 }
               }}
