@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,8 @@ const roleLabels = {
 } as const;
 
 const sections = [
-  { title: "Cursos", text: "Crear y editar cursos, módulos y lecciones.", phase: "Fase 2" },
+  { title: "Cursos", text: "Crear y editar cursos, módulos y lecciones.", href: "/admin/cursos" },
+  { title: "Categorías", text: "Organizar el catálogo por temas.", href: "/admin/categorias" },
   { title: "Usuarios", text: "Alumnos, inscripciones y roles.", phase: "Fase 4" },
   { title: "Estadísticas", text: "Registros, progreso y actividad.", phase: "Fase 4" },
 ];
@@ -28,18 +30,27 @@ export default async function AdminPage() {
         <h1 className="text-3xl font-bold">Administración</h1>
         <Badge variant="secondary">{roleLabels[user.role]}</Badge>
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {sections.map((section) => (
-          <Card key={section.title}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                {section.title}
-                <Badge variant="outline">{section.phase}</Badge>
-              </CardTitle>
-              <CardDescription>{section.text}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {sections.map((section) => {
+          const card = (
+            <Card className={section.href ? "hover:border-primary h-full transition-colors" : "h-full opacity-70"}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {section.title}
+                  {section.phase && <Badge variant="outline">{section.phase}</Badge>}
+                </CardTitle>
+                <CardDescription>{section.text}</CardDescription>
+              </CardHeader>
+            </Card>
+          );
+          return section.href ? (
+            <Link key={section.title} href={section.href}>
+              {card}
+            </Link>
+          ) : (
+            <div key={section.title}>{card}</div>
+          );
+        })}
       </div>
     </div>
   );

@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import type { AuthError } from "@supabase/supabase-js";
-import { z } from "zod";
 
 import { safeNextPath } from "@/lib/auth";
 import { publicEnv } from "@/lib/env";
@@ -12,8 +11,8 @@ import {
   loginSchema,
   newPasswordSchema,
   registerSchema,
-  type FormState,
 } from "@/lib/validation/auth";
+import { fieldErrors, type FormState } from "@/lib/validation/form";
 
 function authErrorMessage(error: AuthError) {
   // Queda en los logs del servidor (Render > Logs) para poder diagnosticar.
@@ -35,10 +34,6 @@ function authErrorMessage(error: AuthError) {
     default:
       return "Ocurrió un error. Volvé a intentar en unos minutos.";
   }
-}
-
-function fieldErrors(error: z.ZodError) {
-  return z.flattenError(error).fieldErrors as Record<string, string[] | undefined>;
 }
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {

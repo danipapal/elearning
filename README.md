@@ -7,8 +7,8 @@ La especificación completa está en [PLAN.md](PLAN.md).
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
-| 1. Base | Next.js, Supabase, autenticación, roles, diseño, despliegue | En prueba |
-| 2. Cursos | Panel de cursos, módulos, lecciones, videos y PDF | Pendiente |
+| 1. Base | Next.js, Supabase, autenticación, roles, diseño, despliegue | Lista |
+| 2. Cursos | Panel de cursos, módulos, lecciones, videos y PDF | En prueba |
 | 3. Alumno | Catálogo, inscripción, reproductor, progreso | Pendiente |
 | 4. Usuarios | Listado, fichas, inscripciones manuales, dashboard | Pendiente |
 | 5. Evaluación | Cuestionarios y certificados | Pendiente |
@@ -18,6 +18,14 @@ La especificación completa está en [PLAN.md](PLAN.md).
 ## Configuración
 
 Seguí la guía paso a paso: [docs/configuracion.md](docs/configuracion.md).
+
+## Base de datos
+
+Las migraciones están en `supabase/migrations/` y se ejecutan **en orden**, una sola vez cada una,
+en Supabase > SQL Editor:
+
+1. `0001_profiles_y_roles.sql` (fase 1)
+2. `0002_cursos.sql` (fase 2)
 
 ## Desarrollo
 
@@ -38,6 +46,8 @@ src/
     (auth)/          login, registro, recuperar y nueva contraseña + server actions
     auth/confirm/    destino de los enlaces de los emails de Supabase
     admin/           panel de administración (verifica rol admin en el servidor)
+      cursos/        cursos, temario, lecciones y sus server actions
+      categorias/    categorías del catálogo
     mi-aprendizaje/  panel del alumno (requiere sesión)
   components/        UI (shadcn/ui) y layout
   lib/
