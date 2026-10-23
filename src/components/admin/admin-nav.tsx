@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, LayoutDashboard, Tags } from "lucide-react";
+import { BookOpen, History, LayoutDashboard, Tags, UserPlus, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/admin", label: "Inicio", icon: LayoutDashboard, exact: true },
+  { href: "/admin", label: "Panel", icon: LayoutDashboard, exact: true },
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
   { href: "/admin/categorias", label: "Categorías", icon: Tags },
+  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
+  { href: "/admin/inscripciones", label: "Inscripción masiva", icon: UserPlus },
+  { href: "/admin/auditoria", label: "Auditoría", icon: History },
 ];
 
 export function AdminNav() {

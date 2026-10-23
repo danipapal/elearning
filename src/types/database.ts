@@ -57,6 +57,79 @@ export type MyLearningRow = {
   completed_lessons: number;
 };
 
+export type AuditEntry = {
+  id: number;
+  actor_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  summary: string;
+  details: {
+    changed?: string[];
+    user_id?: string;
+    course_id?: string;
+    expires_at?: string;
+    email?: string;
+    from?: { role: UserRole; status: UserStatus };
+    to?: { role: UserRole; status: UserStatus };
+  };
+  created_at: string;
+};
+
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  role: UserRole;
+  status: UserStatus;
+  created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  enrollments_count: number;
+  total_count: number;
+};
+
+export type AdminEnrollmentRow = {
+  enrollment_id: string;
+  user_id: string;
+  email: string;
+  full_name: string;
+  course_id: string;
+  course_title: string;
+  course_slug: string;
+  source: EnrollmentSource;
+  status: EnrollmentStatus;
+  enrolled_at: string;
+  expires_at: string | null;
+  last_accessed_at: string | null;
+  total_lessons: number;
+  completed_lessons: number;
+};
+
+export type WeekCount = { week: string; count: number };
+
+export type AdminStats = {
+  users_total: number;
+  students_total: number;
+  users_new_7d: number;
+  enrollments_total: number;
+  enrollments_7d: number;
+  courses_published: number;
+  lessons_completed: number;
+  courses_completed: number;
+  users_by_week: WeekCount[];
+  enrollments_by_week: WeekCount[];
+  top_lessons: { lesson: string; course: string; completed: number }[];
+};
+
+export type FunnelRow = {
+  lesson_id: string;
+  lesson_title: string;
+  module_title: string;
+  enrolled: number;
+  completed: number;
+};
+
 type Category = {
   id: string;
   name: string;
@@ -233,6 +306,20 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      audit_log: {
+        Row: AuditEntry;
+        Insert: never;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -250,6 +337,46 @@ export type Database = {
       };
       my_learning: { Args: Record<string, never>; Returns: MyLearningRow[] };
       can_download_file: { Args: { p_path: string }; Returns: boolean };
+      is_active_user: { Args: Record<string, never>; Returns: boolean };
+      assert_admin: { Args: Record<string, never>; Returns: undefined };
+      admin_list_users: {
+        Args: {
+          p_search?: string | null;
+          p_role?: UserRole | null;
+          p_status?: UserStatus | null;
+          p_course_id?: string | null;
+          p_from?: string | null;
+          p_to?: string | null;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: AdminUserRow[];
+      };
+      admin_get_user: {
+        Args: { p_user_id: string };
+        Returns: Omit<AdminUserRow, "enrollments_count" | "total_count">[];
+      };
+      admin_enrollment_progress: {
+        Args: { p_user_id?: string | null; p_course_id?: string | null };
+        Returns: AdminEnrollmentRow[];
+      };
+      admin_user_activity: {
+        Args: { p_user_id: string; p_limit?: number };
+        Returns: { completed_at: string; lesson_id: string; lesson_title: string; course_title: string }[];
+      };
+      admin_set_role: { Args: { p_user_id: string; p_role: UserRole }; Returns: undefined };
+      admin_set_status: { Args: { p_user_id: string; p_status: UserStatus }; Returns: undefined };
+      admin_delete_user: { Args: { p_user_id: string }; Returns: undefined };
+      admin_enroll: {
+        Args: { p_user_id: string; p_course_id: string; p_expires_at?: string | null };
+        Returns: undefined;
+      };
+      admin_enroll_emails: {
+        Args: { p_course_id: string; p_emails: string[]; p_expires_at?: string | null };
+        Returns: { email: string; result: "enrolled" | "updated" | "not_found" }[];
+      };
+      admin_stats: { Args: Record<string, never>; Returns: AdminStats };
+      admin_course_funnel: { Args: { p_course_id: string }; Returns: FunnelRow[] };
     };
     Enums: {
       user_role: UserRole;
