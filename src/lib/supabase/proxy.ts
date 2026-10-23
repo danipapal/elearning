@@ -6,8 +6,10 @@ import type { Database } from "@/types/database";
 // Rutas que requieren sesión iniciada.
 const PROTECTED_PREFIXES = ["/mi-aprendizaje", "/admin", "/perfil"];
 
-export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
+// requestHeaders: headers que recibe la página (incluye la CSP con el nonce).
+export async function updateSession(request: NextRequest, requestHeaders: Headers) {
+  const next = () => NextResponse.next({ request: { headers: requestHeaders } });
+  let response = next();
 
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,7 +21,8 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet, headers) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
+          requestHeaders.set("cookie", request.headers.get("cookie") ?? "");
+          response = next();
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );

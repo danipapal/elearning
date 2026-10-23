@@ -16,10 +16,12 @@ export function FormField({
   hint,
   state,
   className,
+  htmlFor,
   children,
 }: {
   name: string;
   label: string;
+  htmlFor?: string;
   hint?: string;
   state: FormState;
   className?: string;
@@ -28,7 +30,7 @@ export function FormField({
   const error = state.fieldErrors?.[name]?.[0];
   return (
     <div className={cn("grid gap-2", className)}>
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={htmlFor ?? name}>{label}</Label>
       {children}
       {hint && !error && <p className="text-muted-foreground text-xs">{hint}</p>}
       {error && <p className="text-destructive text-sm">{error}</p>}
@@ -85,7 +87,9 @@ export function useFormAction(
   const [state, dispatch, pending] = useActionState(action, {});
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    // Incluye el botón que envió el formulario (name/value), si tiene.
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const formData = new FormData(event.currentTarget, submitter);
     startTransition(() => dispatch(formData));
   };
   return { state, onSubmit, pending };

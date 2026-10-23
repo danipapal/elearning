@@ -10,6 +10,7 @@ import { coverUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/users";
 
+import { setCertificateImage } from "./actions";
 import { CertificateSettingsForm } from "./settings-form";
 
 export const metadata: Metadata = { title: "Certificados" };
@@ -53,12 +54,14 @@ export default async function CertificatesAdminPage() {
               label="Logo"
               hint="PNG con fondo transparente, idealmente horizontal."
               imageUrl={coverUrl(settings.logo_path)}
+              save={setCertificateImage.bind(null, "logo")}
             />
             <BrandingUpload
               kind="signature"
               label="Firma"
               hint="PNG con fondo transparente. Es pública: cualquiera que vea un certificado la ve."
               imageUrl={coverUrl(settings.signature_path)}
+              save={setCertificateImage.bind(null, "signature")}
             />
           </div>
           <CertificateSettingsForm settings={settings} />

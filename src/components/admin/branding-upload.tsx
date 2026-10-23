@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useRef, useState, useTransition } from "react";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 
-import { setCertificateImage } from "@/app/admin/certificados/actions";
 import { Button } from "@/components/ui/button";
 import { COVERS_BUCKET } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/client";
@@ -12,17 +11,21 @@ import { createClient } from "@/lib/supabase/client";
 const TYPES: Record<string, "png" | "jpg"> = { "image/png": "png", "image/jpeg": "jpg" };
 const MAX_BYTES = 2 * 1024 * 1024;
 
-// Logo o firma del certificado. Solo PNG o JPG (el PDF no admite WebP).
+// Imagen de marca (logo del sitio, logo o firma del certificado). Solo PNG o
+// JPG: el PDF no admite WebP y muchos clientes de email no muestran SVG.
+// save guarda la ruta en el servidor (acción del panel).
 export function BrandingUpload({
   kind,
   label,
   hint,
   imageUrl,
+  save,
 }: {
-  kind: "logo" | "signature";
+  kind: "logo" | "signature" | "site-logo";
   label: string;
   hint: string;
   imageUrl: string | null;
+  save: (path: string | null) => Promise<{ error?: string }>;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +42,7 @@ export function BrandingUpload({
         .storage.from(COVERS_BUCKET)
         .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
       if (uploadError) return setError("No se pudo subir la imagen.");
-      const result = await setCertificateImage(kind, path);
+      const result = await save(path);
       if (result.error) setError(result.error);
     });
   }
@@ -82,7 +85,12 @@ export function BrandingUpload({
             variant="ghost"
             size="sm"
             disabled={pending}
-            onClick={() => startTransition(async () => void (await setCertificateImage(kind, null)))}
+            onClick={() =>
+              startTransition(async () => {
+                const result = await save(null);
+                if (result.error) setError(result.error);
+              })
+            }
           >
             <Trash2 /> Quitar
           </Button>

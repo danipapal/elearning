@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { forgotPassword } from "@/app/(auth)/actions";
 import { Field, FormMessage, SubmitButton } from "@/components/auth/form-parts";
+import { Turnstile } from "@/components/turnstile";
 import type { FormState } from "@/lib/validation/auth";
 
 export function ForgotForm() {
@@ -17,6 +18,7 @@ export function ForgotForm() {
     <form action={action} className="grid gap-4" noValidate>
       <FormMessage state={state} />
       <Field name="email" label="Email" type="email" autoComplete="email" required state={state} />
+      <Turnstile resetKey={state} />
       <SubmitButton>Enviar enlace</SubmitButton>
     </form>
   );

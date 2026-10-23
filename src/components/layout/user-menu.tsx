@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, LogOut, Shield } from "lucide-react";
+import { BookOpen, LogOut, Shield, UserRound } from "lucide-react";
 
 import { logout } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,11 @@ export function UserMenu({
         <DropdownMenuItem asChild>
           <Link href="/mi-aprendizaje">
             <BookOpen /> Mi aprendizaje
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/perfil">
+            <UserRound /> Mi perfil
           </Link>
         </DropdownMenuItem>
         {isAdmin && (

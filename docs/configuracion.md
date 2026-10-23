@@ -33,19 +33,10 @@ No hace falta saber programar: son pasos en las páginas de Supabase y Render.
 2. **Authentication > URL Configuration**:
    - **Site URL:** por ahora `http://localhost:3000` (en la parte 2 la cambiamos por la de Render).
    - **Redirect URLs:** agregá `http://localhost:3000/**` (en la parte 2 agregamos la de Render).
-3. **(Opcional, solo con SMTP propio)** **Authentication > Emails > Templates**. Supabase no deja editar las plantillas mientras se use su servidor de email incluido; lo hacemos en la fase 6 al configurar Resend. Sin este cambio todo funciona igual: si un alumno abre el enlace de confirmación en otro navegador, la cuenta queda confirmada y solo tiene que iniciar sesión. Con SMTP propio, cambiar los enlaces así:
-   - **Confirm signup:** en el HTML, reemplazá `{{ .ConfirmationURL }}` por:
-     ```
-     {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/mi-aprendizaje
-     ```
-   - **Reset Password:** reemplazá `{{ .ConfirmationURL }}` por:
-     ```
-     {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery
-     ```
-   Podés traducir el texto de los emails al español en el mismo lugar.
+3. Las plantillas de los emails (en español) se cargan en la **parte 4**, después de configurar Resend.
 
 > El servidor de email incluido en Supabase solo envía unos pocos emails por hora. Alcanza para probar;
-> en la fase 6 configuramos Resend para producción.
+> para producción se configura Resend (parte 4).
 
 ### 1.4 Copiar las claves públicas
 
@@ -118,3 +109,114 @@ npm run dev
 ```
 
 Abrí <http://localhost:3000>.
+
+---
+
+## Parte 4: emails con tu dominio (Resend)
+
+Con esto los emails salen desde una dirección de tu dominio (por ejemplo `hola@tudominio.com`), llegan mejor
+(menos spam) y se activan la bienvenida, el aviso de certificado, los anuncios y el formulario de contacto.
+El plan gratis de Resend permite 3.000 emails por mes (100 por día).
+
+### 4.1 Crear la cuenta y verificar el dominio
+
+1. Entrá a <https://resend.com> y creá una cuenta.
+2. **Domains > Add Domain**: escribí tu dominio (ej. `tudominio.com`) y elegí la región **São Paulo (sa-east-1)**.
+3. Resend te muestra 3 o 4 registros DNS (tipo **MX** y **TXT**). Hay que cargarlos donde administrás el
+   dominio (Nic.ar, GoDaddy, Cloudflare, etc.). Copiá cada uno **tal cual** (nombre, tipo y valor).
+4. Volvé a Resend y tocá **Verify DNS Records**. Puede tardar de unos minutos a unas horas. Cuando diga
+   **Verified**, seguí.
+
+### 4.2 Crear la clave
+
+1. **API Keys > Create API Key**. Nombre: `elearning`. Permiso: **Sending access**. Dominio: el tuyo.
+2. Copiá la clave (`re_...`). Solo se muestra una vez. **Es secreta**: va únicamente en Render.
+
+### 4.3 Cargarla en Render
+
+En Render > tu servicio > **Environment**, agregá:
+
+| Variable | Valor |
+| --- | --- |
+| `RESEND_API_KEY` | la clave `re_...` |
+| `EMAIL_FROM` | la dirección remitente, ej. `hola@tudominio.com` (tiene que ser de tu dominio verificado) |
+
+Tocá **Save, rebuild and deploy**. En la web, **Administración > Emails** tiene que decir *Envío de emails activo*.
+Probá con **Enviarme una prueba**.
+
+### 4.4 Que Supabase también use Resend (confirmación y recuperación de contraseña)
+
+1. Supabase > **Authentication > Emails > SMTP Settings** > activá **Enable custom SMTP**:
+   - **Sender email:** el mismo `EMAIL_FROM` (ej. `hola@tudominio.com`)
+   - **Sender name:** el nombre de tu sitio
+   - **Host:** `smtp.resend.com` · **Port:** `465`
+   - **Username:** `resend` · **Password:** la clave `re_...`
+2. **Authentication > Rate Limits**:
+   - *Rate limit for sending emails*: subilo a `100` por hora.
+   - *Rate limit for sign ups and sign ins*: subilo a `300`. Todos los inicios de sesión pasan por el servidor
+     de Render, así que Supabase los ve como si vinieran de una sola IP; la web ya tiene su propio límite por persona.
+3. **Authentication > Emails > Templates**: reemplazá cada plantilla por estas (asunto y cuerpo).
+
+**Confirm signup**: asunto `Confirmá tu cuenta`
+
+```html
+<h2>¡Te damos la bienvenida!</h2>
+<p>Para activar tu cuenta, confirmá tu email tocando el botón:</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/mi-aprendizaje"
+  style="background:#1d4ed8;color:#ffffff;padding:12px 22px;border-radius:8px;text-decoration:none;display:inline-block">Confirmar mi cuenta</a></p>
+<p>Si no creaste una cuenta, ignorá este email.</p>
+```
+
+**Reset Password**: asunto `Creá una nueva contraseña`
+
+```html
+<h2>Recuperar tu contraseña</h2>
+<p>Recibimos un pedido para cambiar tu contraseña. Tocá el botón para crear una nueva:</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery"
+  style="background:#1d4ed8;color:#ffffff;padding:12px 22px;border-radius:8px;text-decoration:none;display:inline-block">Crear nueva contraseña</a></p>
+<p>El enlace vence en una hora. Si no lo pediste, ignorá este email: tu contraseña no cambia.</p>
+```
+
+**Change Email Address**: asunto `Confirmá tu nuevo email`
+
+```html
+<h2>Confirmá tu nuevo email</h2>
+<p>Tocá el botón para confirmar el cambio de <strong>{{ .Email }}</strong> a <strong>{{ .NewEmail }}</strong>:</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/perfil"
+  style="background:#1d4ed8;color:#ffffff;padding:12px 22px;border-radius:8px;text-decoration:none;display:inline-block">Confirmar cambio</a></p>
+```
+
+Los emails propios de la web (bienvenida, certificado obtenido y anuncios) se editan en **Administración > Emails**.
+
+---
+
+## Parte 5: captcha contra bots (Cloudflare Turnstile)
+
+Gratis. Protege el registro, la recuperación de contraseña y el formulario de contacto. La mayoría de las personas
+no ve nada; solo a los visitantes sospechosos se les pide un clic.
+
+1. Entrá a <https://dash.cloudflare.com>, creá una cuenta y abrí **Turnstile > Add widget**.
+2. **Widget name:** `elearning`. **Hostnames:** agregá el dominio de la web (ej. `tudominio.com` y/o
+   `elearning-u8lp.onrender.com`). **Widget mode:** *Managed*.
+3. Copiá las dos claves y cargalas en Render > **Environment**:
+
+| Variable | Valor |
+| --- | --- |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | *Site Key* (pública) |
+| `TURNSTILE_SECRET_KEY` | *Secret Key* (secreta) |
+
+4. **Save, rebuild and deploy**. En **Administración > Emails** tiene que decir *Captcha activo*.
+
+---
+
+## Variables de entorno (resumen)
+
+| Variable | Obligatoria | Pública | Para qué |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Sí | Sí | Conexión con Supabase |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Sí | Sí | Conexión con Supabase (limitada por RLS) |
+| `NEXT_PUBLIC_SITE_URL` | Sí | Sí | Dirección de la web, sin barra final |
+| `RESEND_API_KEY` | No | **No** | Envío de emails |
+| `EMAIL_FROM` | No | No | Remitente de los emails |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | Sí | Captcha (se muestra en el navegador) |
+| `TURNSTILE_SECRET_KEY` | No | **No** | Captcha (verificación en el servidor) |

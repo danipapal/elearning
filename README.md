@@ -11,8 +11,8 @@ La especificación completa está en [PLAN.md](PLAN.md).
 | 2. Cursos | Panel de cursos, módulos, lecciones, videos y PDF | Lista |
 | 3. Alumno | Catálogo, inscripción, reproductor, progreso | Lista |
 | 4. Usuarios | Listado, fichas, inscripciones manuales, dashboard, auditoría | Lista |
-| 5. Evaluación | Cuestionarios y certificados | En prueba |
-| 6. Pulido y seguridad | Rate limiting, emails, SEO, textos legales | Pendiente |
+| 5. Evaluación | Cuestionarios y certificados | Lista |
+| 6. Pulido y seguridad | Configuración del sitio, emails, rate limiting, captcha, CSP, SEO, privacidad | En prueba |
 | 7. Monetización | Planes, pagos, cupones | Pendiente |
 
 ## Configuración
@@ -29,6 +29,7 @@ en Supabase > SQL Editor:
 3. `0003_inscripciones.sql` (fase 3)
 4. `0004_admin_usuarios.sql` (fase 4)
 5. `0005_cuestionarios_certificados.sql` (fase 5)
+6. `0006_sitio_emails_seguridad.sql` (fase 6)
 
 ## Desarrollo
 

@@ -23,7 +23,8 @@ const features = [
   },
 ];
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: PageProps<"/">) {
+  const { cuenta } = await searchParams;
   const supabase = await createClient();
   const { data: featured } = await supabase
     .from("courses")
@@ -34,6 +35,13 @@ export default async function HomePage() {
 
   return (
     <>
+      {cuenta === "eliminada" && (
+        <div className="mx-auto mt-6 w-full max-w-6xl px-4">
+          <p role="status" className="bg-muted rounded-lg px-4 py-3 text-sm">
+            Eliminamos tu cuenta y todos tus datos. ¡Gracias por haber sido parte!
+          </p>
+        </div>
+      )}
       <section className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-20 text-center sm:py-28">
         <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
           Aprendé a tu ritmo, desde cualquier lugar

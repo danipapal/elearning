@@ -59,6 +59,7 @@ type Certificate = {
   full_name: string;
   course_title: string;
   issued_at: string;
+  emailed_at: string | null;
 };
 export type CertificateSettings = {
   id: boolean;
@@ -70,6 +71,45 @@ export type CertificateSettings = {
   logo_path: string | null;
   signature_path: string | null;
   updated_at: string;
+};
+
+export type SiteSettings = {
+  id: boolean;
+  site_name: string;
+  description: string;
+  logo_path: string | null;
+  primary_color: string;
+  contact_email: string;
+  instagram_url: string;
+  facebook_url: string;
+  youtube_url: string;
+  tiktok_url: string;
+  x_url: string;
+  linkedin_url: string;
+  whatsapp: string;
+  terms_html: string | null;
+  privacy_html: string | null;
+  updated_at: string;
+};
+
+export type EmailTemplateKey = "welcome" | "certificate";
+export type EmailTemplate = {
+  key: EmailTemplateKey;
+  subject: string;
+  body_html: string;
+  button_label: string;
+  enabled: boolean;
+  updated_at: string;
+};
+
+export type Announcement = {
+  id: string;
+  subject: string;
+  body_html: string;
+  course_id: string | null;
+  recipients: number;
+  sent_by: string | null;
+  created_at: string;
 };
 
 type Enrollment = {
@@ -130,6 +170,7 @@ export type AuditEntry = {
     course_id?: string;
     expires_at?: string;
     email?: string;
+    recipients?: number;
     from?: { role: UserRole; status: UserStatus };
     to?: { role: UserRole; status: UserStatus };
   };
@@ -273,6 +314,8 @@ export type Database = {
           avatar_url: string | null;
           role: UserRole;
           status: UserStatus;
+          email_announcements: boolean;
+          welcome_email_sent_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -280,6 +323,7 @@ export type Database = {
         Update: {
           full_name?: string;
           avatar_url?: string | null;
+          email_announcements?: boolean;
         };
         Relationships: [];
       };
@@ -347,8 +391,8 @@ export type Database = {
       };
       enrollments: {
         Row: Enrollment;
-        Insert: Pick<Enrollment, "user_id" | "course_id"> &
-          Partial<Omit<Enrollment, "id" | "user_id" | "course_id">>;
+        // El alumno solo puede indicar estas columnas (el resto lo pone la base).
+        Insert: Pick<Enrollment, "user_id" | "course_id"> & Partial<Pick<Enrollment, "source">>;
         Update: Partial<Omit<Enrollment, "id">>;
         Relationships: [
           {
@@ -362,9 +406,17 @@ export type Database = {
       };
       lesson_progress: {
         Row: LessonProgress;
-        Insert: Pick<LessonProgress, "user_id" | "lesson_id"> & Partial<LessonProgress>;
+        Insert: Pick<LessonProgress, "user_id" | "lesson_id">;
         Update: never;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       quizzes: {
         Row: Quiz;
@@ -425,6 +477,32 @@ export type Database = {
         Insert: never;
         Update: Partial<Omit<CertificateSettings, "id" | "updated_at">>;
         Relationships: [];
+      };
+      site_settings: {
+        Row: SiteSettings;
+        Insert: never;
+        Update: Partial<Omit<SiteSettings, "id" | "updated_at">>;
+        Relationships: [];
+      };
+      email_templates: {
+        Row: EmailTemplate;
+        Insert: never;
+        Update: Partial<Pick<EmailTemplate, "subject" | "body_html" | "button_label" | "enabled">>;
+        Relationships: [];
+      };
+      announcements: {
+        Row: Announcement;
+        Insert: Pick<Announcement, "subject" | "body_html" | "course_id" | "recipients" | "sent_by">;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "announcements_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       audit_log: {
         Row: AuditEntry;
@@ -530,6 +608,16 @@ export type Database = {
           last_attempt_at: string;
         }[];
       };
+      claim_welcome_email: { Args: Record<string, never>; Returns: boolean };
+      claim_certificate_emails: {
+        Args: Record<string, never>;
+        Returns: { code: string; course_title: string; full_name: string }[];
+      };
+      admin_announcement_recipients: {
+        Args: { p_course_id?: string | null };
+        Returns: { email: string; full_name: string }[];
+      };
+      delete_my_account: { Args: Record<string, never>; Returns: undefined };
     };
     Enums: {
       user_role: UserRole;

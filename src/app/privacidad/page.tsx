@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Política de privacidad" };
+import { LegalPage } from "@/components/legal-page";
+import { defaultPrivacyHtml } from "@/lib/legal";
+import { getSiteSettings } from "@/lib/site";
 
-export default function Page() {
-  return (
-    <article className="mx-auto w-full max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold">Política de privacidad</h1>
-      <p className="text-muted-foreground mt-4">Texto pendiente. Se completará en la fase 6 y será editable desde la configuración del sitio.</p>
-    </article>
-  );
+export const metadata: Metadata = {
+  title: "Política de privacidad",
+  alternates: { canonical: "/privacidad" },
+};
+
+export default async function PrivacyPage() {
+  const settings = await getSiteSettings();
+  return <LegalPage title="Política de privacidad" html={settings.privacy_html ?? defaultPrivacyHtml(settings)} />;
 }
