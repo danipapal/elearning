@@ -8,8 +8,8 @@ La especificación completa está en [PLAN.md](PLAN.md).
 | Fase | Contenido | Estado |
 | --- | --- | --- |
 | 1. Base | Next.js, Supabase, autenticación, roles, diseño, despliegue | Lista |
-| 2. Cursos | Panel de cursos, módulos, lecciones, videos y PDF | En prueba |
-| 3. Alumno | Catálogo, inscripción, reproductor, progreso | Pendiente |
+| 2. Cursos | Panel de cursos, módulos, lecciones, videos y PDF | Lista |
+| 3. Alumno | Catálogo, inscripción, reproductor, progreso | En prueba |
 | 4. Usuarios | Listado, fichas, inscripciones manuales, dashboard | Pendiente |
 | 5. Evaluación | Cuestionarios y certificados | Pendiente |
 | 6. Pulido y seguridad | Rate limiting, emails, SEO, textos legales | Pendiente |
@@ -26,6 +26,7 @@ en Supabase > SQL Editor:
 
 1. `0001_profiles_y_roles.sql` (fase 1)
 2. `0002_cursos.sql` (fase 2)
+3. `0003_inscripciones.sql` (fase 3)
 
 ## Desarrollo
 
@@ -48,7 +49,9 @@ src/
     admin/           panel de administración (verifica rol admin en el servidor)
       cursos/        cursos, temario, lecciones y sus server actions
       categorias/    categorías del catálogo
+    cursos/          catálogo, página del curso y reproductor de lecciones
     mi-aprendizaje/  panel del alumno (requiere sesión)
+    api/descargas/   descarga de PDF con enlaces firmados
   components/        UI (shadcn/ui) y layout
   lib/
     auth.ts          lectura de sesión y permisos (único punto de acceso)

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BookOpen, PlayCircle, Award } from "lucide-react";
 
+import { CourseCard } from "@/components/course-card";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
 const features = [
   {
@@ -21,7 +23,15 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: featured } = await supabase
+    .from("courses")
+    .select("slug, title, short_description, cover_path, level, categories(name)")
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(3);
+
   return (
     <>
       <section className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-20 text-center sm:py-28">
@@ -41,6 +51,21 @@ export default function HomePage() {
           </Button>
         </div>
       </section>
+      {featured && featured.length > 0 && (
+        <section className="mx-auto w-full max-w-6xl px-4 pb-16">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <h2 className="text-2xl font-bold">Cursos destacados</h2>
+            <Link href="/cursos" className="text-primary text-sm font-medium hover:underline">
+              Ver todos →
+            </Link>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((course) => (
+              <CourseCard key={course.slug} course={course} />
+            ))}
+          </div>
+        </section>
+      )}
       <section className="bg-muted/40 border-t">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:grid-cols-3">
           {features.map(({ icon: Icon, title, text }) => (

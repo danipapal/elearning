@@ -63,10 +63,10 @@ export const courseSchema = z.object({
   shortDescription: z.string().trim().max(300, { error: "Máximo 300 caracteres." }),
   description: z.string().max(50000),
   introVideoUrl: optionalVideoUrl,
-  categoryId: z.union([z.literal(""), z.uuid()]),
+  categoryId: z.union([z.literal(""), z.guid()]),
   level: z.enum(["all", "beginner", "intermediate", "advanced"]),
   language: z.string().trim().min(2).max(10),
-  instructorId: z.union([z.literal(""), z.uuid()]),
+  instructorId: z.union([z.literal(""), z.guid()]),
   requirements: lines,
   learningObjectives: lines,
   faqs,
@@ -95,7 +95,7 @@ export const lessonSchema = z
   .object({
     title: z.string().trim().min(1, { error: "Ingresá un título." }).max(160),
     type: z.enum(["video", "text", "pdf", "mixed"]),
-    moduleId: z.uuid(),
+    moduleId: z.guid(),
     videoUrl: optionalVideoUrl,
     durationMinutes: z.coerce
       .number({ error: "Ingresá un número." })
@@ -112,7 +112,7 @@ export const lessonSchema = z
   });
 
 export const attachmentSchema = z.object({
-  lessonId: z.uuid(),
+  lessonId: z.guid(),
   path: z.string().min(1).max(300),
   fileName: z.string().trim().min(1).max(200),
   sizeBytes: z.coerce.number().int().min(0).max(50 * 1024 * 1024),

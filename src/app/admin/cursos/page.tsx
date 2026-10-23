@@ -15,7 +15,7 @@ export default async function AdminCoursesPage() {
   const supabase = await createClient();
   const { data: courses } = await supabase
     .from("courses")
-    .select("id, title, slug, status, cover_path, updated_at, categories(name), modules(lessons(count))")
+    .select("id, title, slug, status, cover_path, updated_at, categories(name), modules(lessons(count)), enrollments(count)")
     .order("updated_at", { ascending: false });
 
   return (
@@ -58,6 +58,7 @@ export default async function AdminCoursesPage() {
                         course.categories?.name,
                         `${course.modules.length} módulos`,
                         `${lessons} lecciones`,
+                        `${course.enrollments[0]?.count ?? 0} inscritos`,
                         `actualizado ${formatDate(course.updated_at)}`,
                       ]
                         .filter(Boolean)
