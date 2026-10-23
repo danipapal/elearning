@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, Circle, Eye, FileText, Layers, Lock, PlayCircle, Type } from "lucide-react";
+import { CheckCircle2, Circle, Eye, FileText, Layers, ListChecks, Lock, PlayCircle, Type } from "lucide-react";
 
 import { formatTotalDuration, formatUnlockDate, type OutlineModule } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ const ICONS: Record<LessonType, React.ComponentType<{ className?: string }>> = {
   text: Type,
   pdf: FileText,
   mixed: Layers,
-  quiz: FileText,
+  quiz: ListChecks,
 };
 
 // Temario del curso. Se usa en la página pública y en el índice lateral del

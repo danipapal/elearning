@@ -1,18 +1,19 @@
 "use client";
 
-import { useConfirm } from "@/components/admin/confirm-dialog";
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 
 import { deleteLesson, updateLesson } from "@/app/admin/cursos/actions";
 import { AttachmentsManager } from "@/components/admin/attachments-manager";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import { FormField, FormStatus, SaveButton, useFormAction } from "@/components/admin/form-fields";
+import { QuizEditor } from "@/components/admin/quiz-editor";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { parseVideoUrl } from "@/lib/video";
-import type { Database, LessonType } from "@/types/database";
+import type { AdminQuiz, Database, LessonType } from "@/types/database";
 
 type Lesson = Database["public"]["Tables"]["lessons"]["Row"];
 
@@ -21,6 +22,7 @@ const TYPE_HELP: Record<string, string> = {
   text: "Contenido escrito con el editor.",
   pdf: "Material para descargar, con una explicación opcional.",
   mixed: "Video, texto y archivos juntos.",
+  quiz: "Preguntas con corrección automática. Armalo abajo y guardalo.",
 };
 
 function VideoPreview({ url }: { url: string }) {
@@ -46,13 +48,15 @@ export function LessonForm({
   lesson,
   modules,
   attachments,
+  quiz,
 }: {
   lesson: Lesson;
   modules: { id: string; title: string }[];
   attachments: { id: string; file_name: string; size_bytes: number }[];
+  quiz: AdminQuiz | null;
 }) {
   const { state, onSubmit, pending } = useFormAction(updateLesson.bind(null, lesson.id));
-  const [type, setType] = useState<LessonType>(lesson.type === "quiz" ? "text" : lesson.type);
+  const [type, setType] = useState<LessonType>(lesson.type);
   const [videoUrl, setVideoUrl] = useState(lesson.video_url ?? "");
   const [deleting, startDelete] = useTransition();
   const confirm = useConfirm();
@@ -77,6 +81,7 @@ export function LessonForm({
               <option value="text">Texto</option>
               <option value="pdf">PDF</option>
               <option value="mixed">Mixta (video + texto + archivos)</option>
+              <option value="quiz">Cuestionario</option>
             </NativeSelect>
           </FormField>
           <FormField name="moduleId" label="Módulo" state={state}>
@@ -126,7 +131,7 @@ export function LessonForm({
 
         <FormField
           name="content"
-          label={type === "text" ? "Contenido" : "Resumen o explicación"}
+          label={type === "text" ? "Contenido" : type === "quiz" ? "Instrucciones (opcional)" : "Resumen o explicación"}
           state={state}
         >
           <RichTextEditor name="content" defaultValue={lesson.content} />
@@ -167,6 +172,8 @@ export function LessonForm({
           </div>
         </div>
       </form>
+
+      {type === "quiz" && <QuizEditor lessonId={lesson.id} quiz={quiz} />}
 
       {(usesFiles || attachments.length > 0) && (
         <section className="grid grid-cols-1 gap-3">

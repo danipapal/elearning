@@ -9,6 +9,9 @@ export const ENTITY_LABELS: Record<string, string> = {
   lesson_attachments: "Material",
   enrollments: "Inscripción",
   profiles: "Usuario",
+  quizzes: "Cuestionario",
+  certificates: "Certificado",
+  certificate_settings: "Plantilla de certificado",
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -65,6 +68,10 @@ export function describeAudit(
     }
     return `Editó el perfil de${name}`;
   }
+
+  if (type === "quizzes") return `Guardó el cuestionario${name}`;
+  if (type === "certificates") return `Revocó el certificado${name}`;
+  if (type === "certificate_settings") return "Editó la plantilla del certificado";
 
   if (type === "enrollments") {
     const title = details.course_id ? courseTitles?.get(details.course_id) : undefined;

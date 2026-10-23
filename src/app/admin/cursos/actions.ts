@@ -425,6 +425,9 @@ export async function updateLesson(
 
   const { error } = await supabase.from("lessons").update(update).eq("id", lessonId);
   if (error) return { error: GENERIC_ERROR };
+  // Si dejó de ser cuestionario, se borra el cuestionario (si no, la lección
+  // no se podría marcar como completada).
+  if (data.type !== "quiz") await supabase.rpc("admin_delete_quiz", { p_lesson_id: lessonId });
 
   refresh();
   return { success: "Lección guardada." };

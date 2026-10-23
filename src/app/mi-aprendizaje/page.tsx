@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { Award, GraduationCap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,16 @@ export default async function MyLearningPage({ searchParams }: PageProps<"/mi-ap
   const firstName = user.fullName.split(" ")[0];
 
   const supabase = await createClient();
-  const { data: courses } = await supabase.rpc("my_learning");
+  const [{ data: courses }, { data: certificates }] = await Promise.all([
+    supabase.rpc("my_learning"),
+    supabase
+      .from("certificates")
+      .select("code, course_id, course_title, issued_at")
+      .eq("user_id", user.id)
+      .order("issued_at", { ascending: false }),
+  ]);
+
+  const certificateByCourse = new Map(certificates?.map((item) => [item.course_id, item.code]));
 
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 px-4 py-12">
@@ -66,6 +75,13 @@ export default async function MyLearningPage({ searchParams }: PageProps<"/mi-ap
                     </p>
                   </div>
                 </div>
+                {certificateByCourse.has(course.course_id) && (
+                  <Button asChild variant="default">
+                    <Link href={`/certificados/${certificateByCourse.get(course.course_id)}`}>
+                      <Award /> Certificado
+                    </Link>
+                  </Button>
+                )}
                 <Button asChild variant={progress === 100 ? "outline" : "default"}>
                   <Link href={href}>
                     {progress === 100 ? "Repasar" : done > 0 || course.last_lesson_id ? "Continuar donde lo dejé" : "Empezar"}
@@ -87,6 +103,31 @@ export default async function MyLearningPage({ searchParams }: PageProps<"/mi-ap
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {Boolean(certificates?.length) && (
+        <section className="grid gap-3">
+          <h2 className="text-xl font-semibold">Mis certificados</h2>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {certificates?.map((certificate) => (
+              <li key={certificate.code}>
+                <Link
+                  href={`/certificados/${certificate.code}`}
+                  className="bg-card hover:border-primary flex items-center gap-3 rounded-xl border p-4 transition-colors"
+                >
+                  <Award className="text-primary size-8 shrink-0" />
+                  <span className="grid min-w-0">
+                    <span className="truncate font-medium">{certificate.course_title}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {new Intl.DateTimeFormat("es-AR", { dateStyle: "medium" }).format(new Date(certificate.issued_at))} ·{" "}
+                      {certificate.code}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

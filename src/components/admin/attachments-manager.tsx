@@ -1,9 +1,9 @@
 "use client";
 
-import { useConfirm } from "@/components/admin/confirm-dialog";
 import { useRef, useState, useTransition } from "react";
 import { FileText, Loader2, Trash2, Upload } from "lucide-react";
 
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import { addAttachment, deleteAttachment } from "@/app/admin/cursos/actions";
 import { Button } from "@/components/ui/button";
 import { FILES_BUCKET, MAX_PDF_BYTES, formatBytes } from "@/lib/storage";

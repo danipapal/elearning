@@ -88,13 +88,13 @@ export const moduleSchema = z.object({
 
 export const newLessonSchema = z.object({
   title: z.string().trim().min(1, { error: "Ingresá un título." }).max(160),
-  type: z.enum(["video", "text", "pdf", "mixed"]),
+  type: z.enum(["video", "text", "pdf", "mixed", "quiz"]),
 });
 
 export const lessonSchema = z
   .object({
     title: z.string().trim().min(1, { error: "Ingresá un título." }).max(160),
-    type: z.enum(["video", "text", "pdf", "mixed"]),
+    type: z.enum(["video", "text", "pdf", "mixed", "quiz"]),
     moduleId: z.guid(),
     videoUrl: optionalVideoUrl,
     durationMinutes: z.coerce

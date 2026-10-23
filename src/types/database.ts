@@ -11,6 +11,66 @@ export type VideoProvider = "vimeo" | "youtube";
 export type Faq = { question: string; answer: string };
 export type EnrollmentSource = "free" | "manual" | "purchase" | "subscription";
 export type EnrollmentStatus = "active" | "cancelled" | "expired";
+export type QuestionType = "single" | "multiple" | "true_false";
+
+// Cuestionario completo (editor de admin, incluye las respuestas correctas).
+export type AdminQuiz = {
+  passing_score: number;
+  max_attempts: number | null;
+  questions: {
+    id: string;
+    type: QuestionType;
+    prompt: string;
+    explanation: string;
+    options: { id: string; label: string; is_correct: boolean }[];
+  }[];
+};
+
+export type QuizResult = {
+  score: number;
+  passed: boolean;
+  correct_count: number;
+  total: number;
+  attempts_used: number;
+  max_attempts: number | null;
+  results: { question_id: string; correct: boolean }[];
+  correct_options: string[] | null;
+};
+
+export type QuizReview = { correct_options: string[]; explanations: Record<string, string> };
+
+type Quiz = { lesson_id: string; passing_score: number; max_attempts: number | null; updated_at: string };
+type QuizQuestion = { id: string; lesson_id: string; type: QuestionType; prompt: string; position: number };
+type QuizOption = { id: string; question_id: string; label: string; position: number };
+type QuizAttempt = {
+  id: string;
+  user_id: string;
+  lesson_id: string;
+  score: number;
+  passed: boolean;
+  answers: Record<string, string[]>;
+  created_at: string;
+};
+type Certificate = {
+  id: string;
+  user_id: string;
+  course_id: string;
+  code: string;
+  full_name: string;
+  course_title: string;
+  issued_at: string;
+};
+export type CertificateSettings = {
+  id: boolean;
+  title: string;
+  recipient_label: string;
+  body: string;
+  signer_name: string;
+  signer_title: string;
+  logo_path: string | null;
+  signature_path: string | null;
+  updated_at: string;
+};
 
 type Enrollment = {
   id: string;
@@ -306,6 +366,66 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      quizzes: {
+        Row: Quiz;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      quiz_questions: {
+        Row: QuizQuestion;
+        Insert: never;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["lesson_id"];
+          },
+        ];
+      };
+      quiz_options: {
+        Row: QuizOption;
+        Insert: never;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "quiz_options_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "quiz_questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quiz_attempts: {
+        Row: QuizAttempt;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      certificates: {
+        Row: Certificate;
+        Insert: never;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "certificates_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      certificate_settings: {
+        Row: CertificateSettings;
+        Insert: never;
+        Update: Partial<Omit<CertificateSettings, "id" | "updated_at">>;
+        Relationships: [];
+      };
       audit_log: {
         Row: AuditEntry;
         Insert: never;
@@ -377,6 +497,39 @@ export type Database = {
       };
       admin_stats: { Args: Record<string, never>; Returns: AdminStats };
       admin_course_funnel: { Args: { p_course_id: string }; Returns: FunnelRow[] };
+      admin_get_quiz: { Args: { p_lesson_id: string }; Returns: AdminQuiz | null };
+      admin_save_quiz: { Args: { p_lesson_id: string; p_quiz: unknown }; Returns: undefined };
+      admin_delete_quiz: { Args: { p_lesson_id: string }; Returns: undefined };
+      submit_quiz: { Args: { p_lesson_id: string; p_answers: Record<string, string[]> }; Returns: QuizResult };
+      quiz_review: { Args: { p_lesson_id: string }; Returns: QuizReview | null };
+      verify_certificate: {
+        Args: { p_code: string };
+        Returns: { code: string; full_name: string; course_title: string; course_slug: string | null; issued_at: string }[];
+      };
+      admin_quiz_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          lesson_id: string;
+          lesson_title: string;
+          course_title: string;
+          attempts: number;
+          students: number;
+          average_score: number | null;
+          passed_students: number;
+        }[];
+      };
+      admin_user_quizzes: {
+        Args: { p_user_id: string };
+        Returns: {
+          lesson_id: string;
+          lesson_title: string;
+          course_title: string;
+          attempts: number;
+          best_score: number;
+          passed: boolean;
+          last_attempt_at: string;
+        }[];
+      };
     };
     Enums: {
       user_role: UserRole;
@@ -388,6 +541,7 @@ export type Database = {
       video_provider: VideoProvider;
       enrollment_source: EnrollmentSource;
       enrollment_status: EnrollmentStatus;
+      question_type: QuestionType;
     };
     CompositeTypes: Record<string, never>;
   };

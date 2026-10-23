@@ -1,6 +1,5 @@
 "use client";
 
-import { useConfirm } from "@/components/admin/confirm-dialog";
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 import {
@@ -20,7 +19,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Eye, FileText, GripVertical, Layers, Pencil, PlayCircle, Plus, Trash2, Type } from "lucide-react";
+import { Eye, FileText, GripVertical, Layers, ListChecks, Pencil, PlayCircle, Plus, Trash2, Type } from "lucide-react";
 
 import {
   createLesson,
@@ -30,6 +29,7 @@ import {
   reorderModules,
   updateModule,
 } from "@/app/admin/cursos/actions";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import { FormField, FormStatus, SaveButton } from "@/components/admin/form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ const LESSON_ICONS: Record<LessonType, React.ComponentType<{ className?: string 
   text: Type,
   pdf: FileText,
   mixed: Layers,
-  quiz: FileText,
+  quiz: ListChecks,
 };
 
 // Mantiene un estado local (para mover sin esperar al servidor) que se
@@ -159,6 +159,7 @@ function NewLessonForm({ moduleId, onDone }: { moduleId: string; onDone: () => v
           <option value="text">Texto</option>
           <option value="pdf">PDF</option>
           <option value="mixed">Mixta</option>
+          <option value="quiz">Cuestionario</option>
         </NativeSelect>
       </FormField>
       <div className="flex gap-2">
