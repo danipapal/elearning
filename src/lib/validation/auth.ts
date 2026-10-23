@@ -50,3 +50,30 @@ export const newPasswordSchema = z
   });
 
 export type { FormState } from "@/lib/validation/form";
+
+export const profileSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, { error: "Ingresá tu nombre." })
+    .max(120, { error: "El nombre es demasiado largo." }),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, { error: "Ingresá tu contraseña actual." }).max(72),
+    password,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    error: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+export const deleteAccountSchema = z.object({
+  currentPassword: z.string().min(1, { error: "Ingresá tu contraseña." }).max(72),
+  confirmation: z
+    .string()
+    .trim()
+    .refine((value) => value.toUpperCase() === "ELIMINAR", { error: "Escribí ELIMINAR para confirmar." }),
+});

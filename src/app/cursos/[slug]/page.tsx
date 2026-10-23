@@ -14,6 +14,8 @@ import { formatTotalDuration, getCourseBySlug, getEnrollment, getOutline } from 
 import { LEVEL_LABELS, STATUS_LABELS } from "@/lib/courses";
 import { sanitizeRichText } from "@/lib/sanitize";
 import { coverUrl } from "@/lib/storage";
+import { publicEnv } from "@/lib/env";
+import { getSiteSettings } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({ params }: PageProps<"/cursos/[slug]">): Promise<Metadata> {
@@ -28,7 +30,8 @@ export async function generateMetadata({ params }: PageProps<"/cursos/[slug]">):
     openGraph: {
       title: course.title,
       description: course.short_description || undefined,
-      images: cover ? [{ url: cover, width: 1280, height: 720 }] : undefined,
+      // Sin portada, la imagen general del sitio.
+      images: cover ? [{ url: cover, width: 1280, height: 720 }] : ["/opengraph-image"],
     },
     robots: course.status === "published" ? undefined : { index: false },
   };
@@ -60,8 +63,31 @@ export default async function CoursePage({ params }: PageProps<"/cursos/[slug]">
     ? Math.round((outline.completedCount / outline.lessons.length) * 100)
     : 0;
 
+  // Datos estructurados para Google (schema.org/Course).
+  const settings = await getSiteSettings();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.title,
+    description: course.short_description || course.title,
+    url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/cursos/${course.slug}`,
+    inLanguage: "es",
+    ...(cover ? { image: cover } : {}),
+    provider: { "@type": "Organization", name: settings.site_name, sameAs: publicEnv.NEXT_PUBLIC_SITE_URL },
+    ...(course.access_type === "free"
+      ? { isAccessibleForFree: true, offers: { "@type": "Offer", price: 0, priceCurrency: "ARS", category: "Free" } }
+      : {}),
+  };
+
   return (
     <div className="pb-16">
+      {course.status === "published" && (
+        <script
+          type="application/ld+json"
+          // Se escapa "<" para que el texto no pueda cerrar la etiqueta.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        />
+      )}
       {course.status !== "published" && (
         <div className="bg-amber-500/15 px-4 py-2 text-center text-sm text-amber-800 dark:text-amber-300">
           Este curso está en estado <strong>{STATUS_LABELS[course.status].toLowerCase()}</strong>: solo

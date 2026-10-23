@@ -12,6 +12,9 @@ export const ENTITY_LABELS: Record<string, string> = {
   quizzes: "Cuestionario",
   certificates: "Certificado",
   certificate_settings: "Plantilla de certificado",
+  site_settings: "Configuración del sitio",
+  email_templates: "Plantilla de email",
+  announcements: "Anuncio",
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -56,6 +59,7 @@ export function describeAudit(
 
   if (type === "profiles") {
     if (action === "delete_user") return `Eliminó la cuenta${name}${details.email ? ` (${details.email})` : ""}`;
+    if (action === "delete_self") return `Eliminó su propia cuenta${details.email ? ` (${details.email})` : ""}`;
     if (details.from && details.to) {
       if (details.from.role !== details.to.role) {
         return `Cambió el rol de${name} de ${ROLE_LABELS[details.from.role]} a ${ROLE_LABELS[details.to.role]}`;
@@ -72,6 +76,11 @@ export function describeAudit(
   if (type === "quizzes") return `Guardó el cuestionario${name}`;
   if (type === "certificates") return `Revocó el certificado${name}`;
   if (type === "certificate_settings") return "Editó la plantilla del certificado";
+  if (type === "site_settings") return "Editó la configuración del sitio";
+  if (type === "email_templates") return "Editó una plantilla de email";
+  if (type === "announcements") {
+    return `Envió el anuncio${name}${details.recipients ? ` a ${details.recipients} personas` : ""}`;
+  }
 
   if (type === "enrollments") {
     const title = details.course_id ? courseTitles?.get(details.course_id) : undefined;

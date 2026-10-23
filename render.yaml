@@ -23,3 +23,12 @@ services:
         sync: false
       - key: NEXT_PUBLIC_SITE_URL
         sync: false
+      # Opcionales (fase 6): emails con Resend y captcha de Cloudflare Turnstile.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: NEXT_PUBLIC_TURNSTILE_SITE_KEY
+        sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false

@@ -5,6 +5,7 @@ import { useActionState } from "react";
 
 import { register } from "@/app/(auth)/actions";
 import { Field, FormMessage, SubmitButton } from "@/components/auth/form-parts";
+import { Turnstile } from "@/components/turnstile";
 import type { FormState } from "@/lib/validation/auth";
 
 export function RegisterForm() {
@@ -57,6 +58,7 @@ export function RegisterForm() {
         </label>
         {termsError && <p className="text-destructive text-sm">{termsError}</p>}
       </div>
+      <Turnstile resetKey={state} />
       <SubmitButton>Crear cuenta gratis</SubmitButton>
     </form>
   );

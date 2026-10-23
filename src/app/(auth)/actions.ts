@@ -1,11 +1,15 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import type { AuthError } from "@supabase/supabase-js";
 
 import { safeNextPath } from "@/lib/auth";
 import { publicEnv } from "@/lib/env";
+import { sendWelcomeEmail } from "@/lib/notifications";
+import { HOUR, MINUTE, TOO_MANY_ATTEMPTS, clientIp, rateLimitAll } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
+import { CAPTCHA_ERROR, TURNSTILE_FIELD, verifyTurnstile } from "@/lib/turnstile";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -43,11 +47,28 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
     return { fieldErrors: fieldErrors(parsed.error), values };
   }
 
+  const ip = await clientIp();
+  if (
+    !rateLimitAll([
+      [`login:ip:${ip}`, 20, 15 * MINUTE],
+      [`login:email:${parsed.data.email}`, 8, 15 * MINUTE],
+    ])
+  ) {
+    return { error: TOO_MANY_ATTEMPTS, values };
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     return { error: authErrorMessage(error), values };
   }
+
+  // Si la bienvenida no salió al confirmar el email (por ejemplo, porque el
+  // enlace se abrió en otro navegador), sale en el primer inicio de sesión.
+  const user = data.user;
+  after(() =>
+    sendWelcomeEmail(supabase, { email: user.email ?? "", fullName: String(user.user_metadata?.full_name ?? "") }),
+  );
 
   redirect(safeNextPath(formData.get("next")));
 }
@@ -60,6 +81,14 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { fieldErrors: fieldErrors(parsed.error), values };
+  }
+
+  const ip = await clientIp();
+  if (!rateLimitAll([[`register:ip:${ip}`, 5, HOUR]])) {
+    return { error: TOO_MANY_ATTEMPTS, values };
+  }
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { error: CAPTCHA_ERROR, values };
   }
 
   const supabase = await createClient();
@@ -87,6 +116,19 @@ export async function forgotPassword(_prev: FormState, formData: FormData): Prom
   const parsed = forgotPasswordSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { fieldErrors: fieldErrors(parsed.error), values };
+  }
+
+  const ip = await clientIp();
+  if (
+    !rateLimitAll([
+      [`forgot:ip:${ip}`, 5, 15 * MINUTE],
+      [`forgot:email:${parsed.data.email}`, 3, HOUR],
+    ])
+  ) {
+    return { error: TOO_MANY_ATTEMPTS, values };
+  }
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { error: CAPTCHA_ERROR, values };
   }
 
   const supabase = await createClient();

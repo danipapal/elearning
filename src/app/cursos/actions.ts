@@ -2,10 +2,12 @@
 
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser, isAdminRole } from "@/lib/auth";
 import { getOutline } from "@/lib/catalog";
+import { sendCertificateEmails } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import type { QuizResult } from "@/types/database";
 
@@ -44,6 +46,8 @@ export async function setLessonCompleted(lessonId: string, completed: boolean) {
     await supabase
       .from("lesson_progress")
       .upsert({ user_id: user.id, lesson_id: lessonId }, { ignoreDuplicates: true });
+    // Si con esta lección terminó el curso, se emitió el certificado: avisarle.
+    after(() => sendCertificateEmails(supabase, { email: user.email, fullName: user.fullName }));
   } else {
     await supabase.from("lesson_progress").delete().eq("user_id", user.id).eq("lesson_id", lessonId);
   }
@@ -98,6 +102,9 @@ export async function submitQuiz(lessonId: string, answers: Record<string, strin
         .eq("course_id", lesson.modules.course_id)
         .maybeSingle();
       certificateCode = certificate?.code;
+    }
+    if (certificateCode) {
+      after(() => sendCertificateEmails(supabase, { email: user.email, fullName: user.fullName }));
     }
   }
   refresh();
