@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import { useRef, useState, useTransition } from "react";
 import { FileText, Loader2, Trash2, Upload } from "lucide-react";
 
@@ -31,6 +32,7 @@ export function AttachmentsManager({
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const confirm = useConfirm();
 
   function upload(file: File) {
     setError(null);
@@ -76,8 +78,8 @@ export function AttachmentsManager({
                 size="icon"
                 aria-label={`Eliminar ${attachment.file_name}`}
                 disabled={pending}
-                onClick={() => {
-                  if (!window.confirm(`¿Eliminar "${attachment.file_name}"?`)) return;
+                onClick={async () => {
+                  if (!(await confirm(`¿Eliminar "${attachment.file_name}"?`))) return;
                   startTransition(() => deleteAttachment(attachment.id));
                 }}
               >
