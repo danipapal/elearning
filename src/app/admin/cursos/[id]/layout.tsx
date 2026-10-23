@@ -14,7 +14,7 @@ export default async function CourseLayout({ children, params }: LayoutProps<"/a
   const supabase = await createClient();
   const { data: course } = await supabase
     .from("courses")
-    .select("id, title, status")
+    .select("id, title, slug, status")
     .eq("id", id)
     .maybeSingle();
   if (!course) notFound();
@@ -33,7 +33,7 @@ export default async function CourseLayout({ children, params }: LayoutProps<"/a
             <h1 className="text-2xl font-bold break-words sm:text-3xl">{course.title}</h1>
             <Badge variant={STATUS_VARIANTS[course.status]}>{STATUS_LABELS[course.status]}</Badge>
           </div>
-          <CourseActions courseId={course.id} status={course.status} />
+          <CourseActions courseId={course.id} slug={course.slug} status={course.status} />
         </div>
         <CourseTabs courseId={course.id} />
       </div>

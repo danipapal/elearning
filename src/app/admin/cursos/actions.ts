@@ -25,7 +25,7 @@ import type { CourseStatus, Database } from "@/types/database";
 // Todas las acciones verifican el rol en el servidor (requireAdmin) y además
 // la base de datos lo exige con RLS.
 
-const uuid = z.uuid();
+const uuid = z.guid();
 const GENERIC_ERROR = "No se pudo guardar. Volvé a intentar.";
 
 async function uniqueCourseSlug(base: string) {
@@ -319,7 +319,7 @@ export async function deleteModule(moduleId: string) {
   refresh();
 }
 
-const reorderSchema = z.array(z.uuid()).max(500);
+const reorderSchema = z.array(z.guid()).max(500);
 
 export async function reorderModules(courseId: string, moduleIds: string[]) {
   await requireAdmin();

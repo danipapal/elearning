@@ -9,6 +9,53 @@ export type CourseAccess = "free" | "paid" | "membership" | "invite";
 export type LessonType = "video" | "text" | "pdf" | "mixed" | "quiz";
 export type VideoProvider = "vimeo" | "youtube";
 export type Faq = { question: string; answer: string };
+export type EnrollmentSource = "free" | "manual" | "purchase" | "subscription";
+export type EnrollmentStatus = "active" | "cancelled" | "expired";
+
+type Enrollment = {
+  id: string;
+  user_id: string;
+  course_id: string;
+  source: EnrollmentSource;
+  status: EnrollmentStatus;
+  enrolled_at: string;
+  expires_at: string | null;
+  last_lesson_id: string | null;
+  last_accessed_at: string | null;
+};
+
+type LessonProgress = {
+  user_id: string;
+  lesson_id: string;
+  completed_at: string;
+};
+
+export type OutlineRow = {
+  module_id: string;
+  module_title: string;
+  module_position: number;
+  release_after_days: number;
+  unlock_at: string | null;
+  lesson_id: string | null;
+  lesson_title: string | null;
+  lesson_type: LessonType | null;
+  lesson_position: number | null;
+  duration_seconds: number | null;
+  is_preview: boolean | null;
+  completed: boolean;
+};
+
+export type MyLearningRow = {
+  course_id: string;
+  title: string;
+  slug: string;
+  cover_path: string | null;
+  enrolled_at: string;
+  last_lesson_id: string | null;
+  last_accessed_at: string | null;
+  total_lessons: number;
+  completed_lessons: number;
+};
 
 type Category = {
   id: string;
@@ -165,6 +212,27 @@ export type Database = {
           },
         ];
       };
+      enrollments: {
+        Row: Enrollment;
+        Insert: Pick<Enrollment, "user_id" | "course_id"> &
+          Partial<Omit<Enrollment, "id" | "user_id" | "course_id">>;
+        Update: Partial<Omit<Enrollment, "id">>;
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lesson_progress: {
+        Row: LessonProgress;
+        Insert: Pick<LessonProgress, "user_id" | "lesson_id"> & Partial<LessonProgress>;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -172,6 +240,16 @@ export type Database = {
       is_superadmin: { Args: Record<string, never>; Returns: boolean };
       is_course_published: { Args: { p_course_id: string }; Returns: boolean };
       duplicate_course: { Args: { p_course_id: string }; Returns: string };
+      module_unlock_at: { Args: { p_module_id: string }; Returns: string | null };
+      can_access_lesson: { Args: { p_lesson_id: string }; Returns: boolean };
+      is_enrolled: { Args: { p_course_id: string }; Returns: boolean };
+      course_outline: { Args: { p_course_id: string }; Returns: OutlineRow[] };
+      course_instructor: {
+        Args: { p_course_id: string };
+        Returns: { full_name: string; avatar_url: string | null }[];
+      };
+      my_learning: { Args: Record<string, never>; Returns: MyLearningRow[] };
+      can_download_file: { Args: { p_path: string }; Returns: boolean };
     };
     Enums: {
       user_role: UserRole;
@@ -181,6 +259,8 @@ export type Database = {
       course_access: CourseAccess;
       lesson_type: LessonType;
       video_provider: VideoProvider;
+      enrollment_source: EnrollmentSource;
+      enrollment_status: EnrollmentStatus;
     };
     CompositeTypes: Record<string, never>;
   };
