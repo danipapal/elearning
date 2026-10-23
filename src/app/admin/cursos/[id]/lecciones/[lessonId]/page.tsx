@@ -14,7 +14,7 @@ export default async function EditLessonPage({
 }: PageProps<"/admin/cursos/[id]/lecciones/[lessonId]">) {
   const { id, lessonId } = await params;
   const supabase = await createClient();
-  const [{ data: lesson }, { data: modules }] = await Promise.all([
+  const [{ data: lesson }, { data: modules }, { data: quiz }] = await Promise.all([
     supabase
       .from("lessons")
       .select("*, modules!inner(course_id), lesson_attachments(id, file_name, size_bytes, created_at)")
@@ -23,6 +23,7 @@ export default async function EditLessonPage({
       .order("created_at", { referencedTable: "lesson_attachments" })
       .maybeSingle(),
     supabase.from("modules").select("id, title").eq("course_id", id).order("position"),
+    supabase.rpc("admin_get_quiz", { p_lesson_id: lessonId }),
   ]);
   if (!lesson) notFound();
 
@@ -34,7 +35,9 @@ export default async function EditLessonPage({
       >
         <ArrowLeft className="size-4" /> Volver al temario
       </Link>
-      <LessonForm lesson={lesson} modules={modules ?? []} attachments={lesson.lesson_attachments} />
+      <LessonForm lesson={lesson} modules={modules ?? []} attachments={lesson.lesson_attachments}
+        quiz={quiz ?? null}
+      />
     </div>
   );
 }

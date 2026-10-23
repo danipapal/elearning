@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, History, LayoutDashboard, Tags, UserPlus, Users } from "lucide-react";
+import { Award, BookOpen, History, LayoutDashboard, Tags, UserPlus, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/categorias", label: "Categorías", icon: Tags },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users },
   { href: "/admin/inscripciones", label: "Inscripción masiva", icon: UserPlus },
+  { href: "/admin/certificados", label: "Certificados", icon: Award },
   { href: "/admin/auditoria", label: "Auditoría", icon: History },
 ];
 

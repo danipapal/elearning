@@ -30,8 +30,15 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/usuari
   const admin = await requireAdmin();
 
   const supabase = await createClient();
-  const [{ data: users }, { data: enrollments }, { data: activity }, { data: audit }, { data: courses }] =
-    await Promise.all([
+  const [
+    { data: users },
+    { data: enrollments },
+    { data: activity },
+    { data: audit },
+    { data: courses },
+    { data: quizzes },
+    { data: certificates },
+  ] = await Promise.all([
       supabase.rpc("admin_get_user", { p_user_id: id }),
       supabase.rpc("admin_enrollment_progress", { p_user_id: id }),
       supabase.rpc("admin_user_activity", { p_user_id: id, p_limit: 20 }),
@@ -42,6 +49,12 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/usuari
         .order("created_at", { ascending: false })
         .limit(20),
       supabase.from("courses").select("id, title, status").neq("status", "archived").order("title"),
+      supabase.rpc("admin_user_quizzes", { p_user_id: id }),
+      supabase
+        .from("certificates")
+        .select("code, course_title, issued_at")
+        .eq("user_id", id)
+        .order("issued_at", { ascending: false }),
     ]);
   const user = users?.[0];
   if (!user) notFound();
@@ -173,6 +186,56 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/usuari
             </p>
             <EnrollUserForm userId={user.id} courses={courses ?? []} />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Cuestionarios y certificados</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          {!quizzes?.length ? (
+            <p className="text-muted-foreground text-sm">Todavía no respondió ningún cuestionario.</p>
+          ) : (
+            <ul className="divide-y rounded-lg border text-sm">
+              {quizzes.map((quiz) => (
+                <li key={quiz.lesson_id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                  <span className="min-w-0">
+                    <span className="font-medium">{quiz.lesson_title}</span>
+                    <span className="text-muted-foreground"> · {quiz.course_title}</span>
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-xs">
+                      {quiz.attempts} {quiz.attempts === 1 ? "intento" : "intentos"} · mejor nota {quiz.best_score}%
+                    </span>
+                    <Badge variant={quiz.passed ? "default" : "outline"}>{quiz.passed ? "Aprobado" : "No aprobado"}</Badge>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {certificates?.length ? (
+            <ul className="grid gap-2 text-sm">
+              {certificates.map((certificate) => (
+                <li key={certificate.code} className="flex flex-wrap items-center justify-between gap-2">
+                  <span>
+                    Certificado de <strong>{certificate.course_title}</strong> ·{" "}
+                    <span className="text-muted-foreground">{formatDateTime(certificate.issued_at)}</span>
+                  </span>
+                  <a
+                    href={`/certificados/${certificate.code}/pdf`}
+                    target="_blank"
+                    rel="noopener"
+                    className="font-mono text-xs hover:underline"
+                  >
+                    {certificate.code}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground text-sm">Todavía no tiene certificados.</p>
+          )}
         </CardContent>
       </Card>
 

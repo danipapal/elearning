@@ -30,9 +30,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const { curso } = await searchParams;
 
   const supabase = await createClient();
-  const [{ data: stats, error }, { data: courses }] = await Promise.all([
+  const [{ data: stats, error }, { data: courses }, { data: quizStats }] = await Promise.all([
     supabase.rpc("admin_stats"),
     supabase.from("courses").select("id, title").eq("status", "published").order("title"),
+    supabase.rpc("admin_quiz_stats"),
   ]);
   if (error) console.error("[admin] estadísticas", error.code, error.message);
 
@@ -106,6 +107,33 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
             </CardContent>
           </Card>
         </>
+      )}
+
+      {Boolean(quizStats?.length) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Cuestionarios</CardTitle>
+            <CardDescription>Nota promedio de todos los intentos y alumnos que aprobaron.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="grid gap-3">
+              {quizStats?.map((quiz) => (
+                <BarRow
+                  key={quiz.lesson_id}
+                  label={quiz.lesson_title}
+                  sublabel={quiz.course_title}
+                  value={Number(quiz.average_score ?? 0)}
+                  max={100}
+                  display={
+                    quiz.attempts > 0
+                      ? `promedio ${quiz.average_score}% · ${quiz.passed_students} de ${quiz.students} aprobaron`
+                      : "sin intentos"
+                  }
+                />
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
       )}
 
       <Card>

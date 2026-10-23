@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, ChevronLeft, ChevronRight, Download, FileText, Lock } from "lucide-react";
+import { ArrowLeft, Award, ChevronLeft, ChevronRight, Download, FileText, Lock } from "lucide-react";
 
 import { CompleteButton } from "@/components/course/complete-button";
 import { CourseOutline } from "@/components/course/course-outline";
+import { QuizPlayer } from "@/components/course/quiz-player";
 import { Button } from "@/components/ui/button";
 import { VideoEmbed } from "@/components/video-embed";
 import { getCurrentUser, isAdminRole } from "@/lib/auth";
@@ -43,6 +44,18 @@ export default async function LessonPage({ params }: PageProps<"/cursos/[slug]/l
         .eq("id", lessonId)
         .maybeSingle()
     : { data: null };
+
+  const quiz = lesson?.type === "quiz" ? await loadQuiz(lesson.id, user?.id) : null;
+  const finished = Boolean(enrollment) && outline.lessons.length > 0 && outline.completedCount === outline.lessons.length;
+  const { data: certificate } =
+    finished && user
+      ? await supabase
+          .from("certificates")
+          .select("code")
+          .eq("course_id", course.id)
+          .eq("user_id", user.id)
+          .maybeSingle()
+      : { data: null };
 
   // Recordar dónde quedó el alumno para "Continuar donde lo dejé".
   if (lesson && enrollment && user) {
@@ -114,7 +127,7 @@ export default async function LessonPage({ params }: PageProps<"/cursos/[slug]/l
             )}
             <div className="flex flex-wrap items-start justify-between gap-4">
               <h1 className="text-2xl font-bold sm:text-3xl">{lesson.title}</h1>
-              {enrollment && <CompleteButton lessonId={lesson.id} completed={current.completed} />}
+              {enrollment && !quiz && <CompleteButton lessonId={lesson.id} completed={current.completed} />}
             </div>
             {!enrollment && !isAdmin && (
               <div className="bg-primary/5 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4 text-sm">
@@ -124,7 +137,36 @@ export default async function LessonPage({ params }: PageProps<"/cursos/[slug]/l
                 </Button>
               </div>
             )}
+            {certificate && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm">
+                <span className="font-medium">¡Completaste el curso! 🎉</span>
+                <Button asChild size="sm">
+                  <Link href={`/certificados/${certificate.code}`}>
+                    <Award /> Ver mi certificado
+                  </Link>
+                </Button>
+              </div>
+            )}
             {content && <div className="prose-content" dangerouslySetInnerHTML={{ __html: content }} />}
+            {quiz &&
+              (quiz.questions.length === 0 ? (
+                <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+                  Este cuestionario todavía no tiene preguntas.
+                </p>
+              ) : (
+                <QuizPlayer
+                  lessonId={lesson.id}
+                  questions={quiz.questions}
+                  passingScore={quiz.passingScore}
+                  maxAttempts={quiz.maxAttempts}
+                  attemptsUsed={quiz.attemptsUsed}
+                  bestScore={quiz.bestScore}
+                  passed={quiz.passed}
+                  review={quiz.review}
+                  canSubmit={Boolean(enrollment) || isAdmin}
+                  signupHref={`/cursos/${slug}`}
+                />
+              ))}
             {lesson.lesson_attachments.length > 0 && (
               <section className="grid gap-3">
                 <h2 className="text-lg font-semibold">Material descargable</h2>
@@ -177,4 +219,38 @@ export default async function LessonPage({ params }: PageProps<"/cursos/[slug]/l
       </aside>
     </div>
   );
+}
+
+// Preguntas (sin las respuestas correctas), intentos del alumno y, si ya
+// aprobó o agotó los intentos, las respuestas para repasar.
+async function loadQuiz(lessonId: string, userId: string | undefined) {
+  const supabase = await createClient();
+  const [{ data: quiz }, { data: questions }, { data: attempts }, { data: review }] = await Promise.all([
+    supabase.from("quizzes").select("passing_score, max_attempts").eq("lesson_id", lessonId).maybeSingle(),
+    supabase
+      .from("quiz_questions")
+      .select("id, type, prompt, position, quiz_options(id, label, position)")
+      .eq("lesson_id", lessonId)
+      .order("position")
+      .order("position", { referencedTable: "quiz_options" }),
+    userId
+      ? supabase.from("quiz_attempts").select("score, passed").eq("lesson_id", lessonId).eq("user_id", userId)
+      : Promise.resolve({ data: [] as { score: number; passed: boolean }[] }),
+    userId ? supabase.rpc("quiz_review", { p_lesson_id: lessonId }) : Promise.resolve({ data: null }),
+  ]);
+  if (!quiz) return null;
+  return {
+    passingScore: quiz.passing_score,
+    maxAttempts: quiz.max_attempts,
+    questions: (questions ?? []).map((question) => ({
+      id: question.id,
+      type: question.type,
+      prompt: question.prompt,
+      options: question.quiz_options.map((option) => ({ id: option.id, label: option.label })),
+    })),
+    attemptsUsed: attempts?.length ?? 0,
+    bestScore: attempts?.length ? Math.max(...attempts.map((attempt) => attempt.score)) : null,
+    passed: Boolean(attempts?.some((attempt) => attempt.passed)),
+    review: review ?? null,
+  };
 }
