@@ -11,7 +11,22 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+// Las portadas se sirven desde Supabase Storage.
+const supabaseUrl = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://example.supabase.co");
+
 const nextConfig: NextConfig = {
+  images: {
+    // Solo para desarrollo con Supabase local (127.0.0.1); en producción es false.
+    dangerouslyAllowLocalIP: ["127.0.0.1", "localhost"].includes(supabaseUrl.hostname),
+    remotePatterns: [
+      {
+        protocol: supabaseUrl.protocol === "http:" ? "http" : "https",
+        hostname: supabaseUrl.hostname,
+        port: supabaseUrl.port,
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {
